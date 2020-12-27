@@ -21,7 +21,7 @@ function App() {
           data-show-count={true}
           aria-label="Star solana-labs/oyster-swap on GitHub"
         >
-          Star
+<!--  Star -->
         </GitHubButton>
         <GitHubButton
           href="https://github.com/project-serum/oyster-swap/fork"
@@ -29,7 +29,7 @@ function App() {
           data-size="large"
           aria-label="Fork project-serum/oyster-swap on GitHub"
         >
-          Fork
+<!--  Fork -->
         </GitHubButton>
       </div>
     </div>
