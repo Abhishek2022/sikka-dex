@@ -5,7 +5,7 @@ import { useConnectionConfig } from "./connection";
 import { useLocalStorageState } from "./utils";
 
 export const WALLET_PROVIDERS = [
-  { name: "nimwallet.io", url: "https://nimwallet.io" },
+  { name: "nimwallet.com", url: "https://nimwallet.com" },
   { name: "solflare.com", url: "https://solflare.com/access-wallet" },
   { name: "mathwallet.org", url: "https://www.mathwallet.org" },
 ];
@@ -16,7 +16,7 @@ export function WalletProvider({ children = null as any }) {
   const { endpoint } = useConnectionConfig();
   const [providerUrl, setProviderUrl] = useLocalStorageState(
     "walletProvider",
-    "https://nimwallet.io"
+    "https://nimwallet.com"
   );
   const wallet = useMemo(() => new Wallet(providerUrl, endpoint), [
     providerUrl,
