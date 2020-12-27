@@ -12,16 +12,6 @@ function App() {
         </div>
       </div>
       <Routes />
-      <div className="social-buttons">
-          <GitHubButton
-              href="https://nimnordic.com"
-              data-color-scheme="no-preference: light; light: light; dark: light;"
-              data-size="large"
-              aria-label="NIM Nordic website"
-          >
-              NIM Nordic website
-          </GitHubButton>
-      </div>
     </div>
   );
 }
