@@ -3,56 +3,77 @@ import Wallet from "@project-serum/sol-wallet-adapter";
 import { notify } from "./notifications";
 import { useConnectionConfig } from "./connection";
 import { useLocalStorageState } from "./utils";
+import {
+  WalletAdapter,
+  PhantomWalletAdapter,
+} from "../wallet-adapters";
 
 export const WALLET_PROVIDERS = [
-  { name: "nimwallet.com", url: "https://nimwallet.com" },
-  { name: "solflare.com", url: "https://solflare.com/access-wallet" },
-  { name: "mathwallet.org", url: "https://www.mathwallet.org" },
+  {
+    name: "Phantom",
+    url: "https://www.phantom.app",
+    icon: `https://www.phantom.app/img/logo.png`,
+    adapter: PhantomWalletAdapter,
+  },
 ];
 
 const WalletContext = React.createContext<any>(null);
 
 export function WalletProvider({ children = null as any }) {
-  const { endpoint } = useConnectionConfig();
-  const [providerUrl, setProviderUrl] = useLocalStorageState(
-    "walletProvider",
-    "https://nimwallet.com"
+
+  const [autoConnect, setAutoConnect] = useState(false);
+  const [providerUrl, setProviderUrl] = useLocalStorageState("walletProvider");
+
+  const provider = useMemo(
+    () => WALLET_PROVIDERS.find(({ url }) => url === providerUrl),
+    [providerUrl]
   );
-  const wallet = useMemo(() => new Wallet(providerUrl, endpoint), [
-    providerUrl,
-    endpoint,
-  ]);
+
+  const wallet = useMemo(
+    function () {
+      if (provider) {
+        return new (provider.adapter)(
+        ) as WalletAdapter;
+      }
+    },
+    [provider]
+  );
 
   const [connected, setConnected] = useState(false);
-  useEffect(() => {
-    console.log("trying to connect");
-    wallet.on("connect", () => {
-      console.log("connected");
-      setConnected(true);
-      let walletPublicKey = wallet.publicKey.toBase58();
-      let keyToDisplay =
-        walletPublicKey.length > 20
-          ? `${walletPublicKey.substring(0, 7)}.....${walletPublicKey.substring(
-              walletPublicKey.length - 7,
-              walletPublicKey.length
-            )}`
-          : walletPublicKey;
 
-      notify({
-        message: "Wallet update",
-        description: "Connected to wallet " + keyToDisplay,
+  useEffect(() => {
+    if (wallet) {
+      wallet.on("connect", () => {
+        if (wallet.publicKey) {
+          console.log("connected");
+          localStorage.removeItem("feeDiscountKey");
+          setConnected(true);
+          const walletPublicKey = wallet.publicKey.toBase58();
+          const keyToDisplay =
+            walletPublicKey.length > 20
+              ? `${walletPublicKey.substring(
+                  0,
+                  7
+                )}.....${walletPublicKey.substring(
+                  walletPublicKey.length - 7,
+                  walletPublicKey.length
+                )}`
+              : walletPublicKey;
+        }
       });
-    });
-    wallet.on("disconnect", () => {
-      setConnected(false);
-      notify({
-        message: "Wallet update",
-        description: "Disconnected from wallet",
+
+      wallet.on("disconnect", () => {
+        setConnected(false);
+        localStorage.removeItem("feeDiscountKey");
       });
-    });
+    }
+
     return () => {
-      wallet.disconnect();
       setConnected(false);
+      if (wallet) {
+        wallet.disconnect();
+        setConnected(false);
+      }
     };
   }, [wallet]);
   return (

@@ -36,15 +36,6 @@ export const ExchangeView = (props: {}) => {
         <div className="App-logo" />
       </div>
       <div className="App-Bar-right">
-        <Button type="text" size="large" style={{ color: "#007e5e" }}>
-          <a
-            href={"https://nimexchange.com/#/"}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Trade
-          </a>
-        </Button>
         <AccountInfo />
         {connected && (
           <Popover
@@ -60,7 +51,7 @@ export const ExchangeView = (props: {}) => {
             <Button
               type="text"
               size="large"
-              onClick={connected ? wallet.disconnect : wallet.connect}
+              onClick={connected ? wallet.disconnect : wallet?.connect}
               style={{ color: "#007e5e" }}
             >
               Connect

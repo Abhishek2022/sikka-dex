@@ -170,7 +170,7 @@ const UseNativeAccount = () => {
         setNativeAccount(acc);
       }
     });
-  }, [setNativeAccount, wallet, wallet.publicKey, connection]);
+  }, [setNativeAccount, wallet, wallet?.publicKey, connection]);
 
   return { nativeAccount };
 };
@@ -229,7 +229,7 @@ export function AccountsProvider({ children = null as any }) {
   useEffect(() => {
     setUserAccounts(
       [
-        wrapNativeAccount(wallet.publicKey, nativeAccount),
+        wrapNativeAccount(wallet?.publicKey, nativeAccount),
         ...tokenAccounts,
       ].filter((a) => a !== undefined) as TokenAccount[]
     );
@@ -471,6 +471,7 @@ const deserializeAccount = (data: Buffer) => {
 
   return accountInfo;
 };
+
 
 // TODO: expose in spl package
 const deserializeMint = (data: Buffer) => {
