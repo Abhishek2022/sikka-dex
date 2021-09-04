@@ -1,12 +1,16 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import Wallet from "@project-serum/sol-wallet-adapter";
-import { notify } from "./notifications";
-import { useConnectionConfig } from "./connection";
-import { useLocalStorageState } from "./utils";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Button, Modal } from "antd";
 import {
   WalletAdapter,
   PhantomWalletAdapter,
 } from "../wallet-adapters";
+import { useLocalStorageState } from "../utils/utils";
 
 export const WALLET_PROVIDERS = [
   {
@@ -76,11 +80,27 @@ export function WalletProvider({ children = null as any }) {
       }
     };
   }, [wallet]);
+
+  useEffect(() => {
+    if (wallet && autoConnect) {
+      wallet.connect();
+      setAutoConnect(false);
+    }
+
+    return () => {};
+  }, [wallet, autoConnect]);
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const select = useCallback(() => setIsModalVisible(true), []);
+  const close = useCallback(() => setIsModalVisible(false), []);
+
   return (
     <WalletContext.Provider
       value={{
         wallet,
         connected,
+        select,
         providerUrl,
         setProviderUrl,
         providerName:
@@ -89,17 +109,70 @@ export function WalletProvider({ children = null as any }) {
       }}
     >
       {children}
+      <Modal
+        title="Select Wallet"
+        okText="Connect"
+        visible={isModalVisible}
+        okButtonProps={{ style: { display: "none" } }}
+        onCancel={close}
+        width={400}
+      >
+        {WALLET_PROVIDERS.map((provider) => {
+          const onClick = function () {
+            setProviderUrl(provider.url);
+            setAutoConnect(true);
+            close();
+          };
+
+          return (
+            <Button
+              size="large"
+              type={providerUrl === provider.url ? "primary" : "ghost"}
+              onClick={onClick}
+              icon={
+                <img
+                  alt={`${provider.name}`}
+                  width={20}
+                  height={20}
+                  src={provider.icon}
+                  style={{ marginRight: 8 }}
+                />
+              }
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                marginBottom: 8,
+              }}
+            >
+              {provider.name}
+            </Button>
+          );
+        })}
+      </Modal>
     </WalletContext.Provider>
   );
 }
 
 export function useWallet() {
   const context = useContext(WalletContext);
+  if (!context) {
+    throw new Error("Missing wallet context");
+  }
+
+  const wallet = context.wallet;
   return {
     connected: context.connected,
-    wallet: context.wallet,
+    wallet: wallet,
     providerUrl: context.providerUrl,
     setProvider: context.setProviderUrl,
     providerName: context.providerName,
+    select: context.select,
+    connect() {
+      wallet ? wallet.connect() : context.select();
+    },
+    disconnect() {
+      wallet?.disconnect();
+    },
   };
 }

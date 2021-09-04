@@ -52,7 +52,7 @@ export class PhantomWalletAdapter
   get publicKey() {
     return this._provider?.publicKey || DEFAULT_PUBLIC_KEY;
   }
-
+ 
   async signTransaction(transaction: Transaction) {
     if (!this._provider) {
       return transaction;
